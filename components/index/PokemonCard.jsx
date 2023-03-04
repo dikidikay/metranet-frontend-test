@@ -1,10 +1,9 @@
 import { getPokemonByName } from "@/api/pokemonsApi";
-import { Card, Skeleton } from "antd";
+import { Skeleton } from "antd";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import { bgType } from "@/helper/helper";
 
 const PokemonCard = React.forwardRef(({ name }, ref) => {
   const {
@@ -43,12 +42,50 @@ const PokemonCard = React.forwardRef(({ name }, ref) => {
               </p>
               <div className="flex gap-1">
                 {pokemon?.types?.map(({ slot, type }) => {
-                  const bg = bgType(type?.name);
+                  let bgType;
+                  if (type?.name === "normal") {
+                    bgType = "bg-[#a4acaf]";
+                  } else if (type?.name === "fighting") {
+                    bgType = "bg-[#d56723]";
+                  } else if (type?.name === "flying") {
+                    bgType = "bg-[#3dc7ef]";
+                  } else if (type?.name === "poison") {
+                    bgType = "bg-[#b97fc9]";
+                  } else if (type?.name === "ground") {
+                    bgType = "bg-[#f7de3f]";
+                  } else if (type?.name === "rock") {
+                    bgType = "bg-[#a38c21]";
+                  } else if (type?.name === "bug") {
+                    bgType = "bg-[#729f3f]";
+                  } else if (type?.name === "ghost") {
+                    bgType = "bg-[#7b62a3]";
+                  } else if (type?.name === "steel") {
+                    bgType = "bg-[#9eb7b8]";
+                  } else if (type?.name === "fire") {
+                    bgType = "bg-[#fd7d24]";
+                  } else if (type?.name === "water") {
+                    bgType = "bg-[#4592c4]";
+                  } else if (type?.name === "grass") {
+                    bgType = "bg-[#9bcc50]";
+                  } else if (type?.name === "electric") {
+                    bgType = "bg-[#eed535]";
+                  } else if (type?.name === "psychic") {
+                    bgType = "bg-[#f366b9]";
+                  } else if (type?.name === "ice") {
+                    bgType = "bg-[#51c4e7]";
+                  } else if (type?.name === "dragon") {
+                    bgType = "bg-[#f16e57] ";
+                  } else if (type?.name === "dark") {
+                    bgType = "bg-[#707070] ";
+                  } else if (type?.name === "fairy") {
+                    bgType = "bg-[#fdb9e9] ";
+                  } else {
+                  }
 
                   return (
                     <p
                       key={slot}
-                      className={`${bg} px-2 py-1 rounded-lg capitalize text-white`}
+                      className={`${bgType} px-2 py-1 rounded-lg capitalize text-white`}
                     >
                       {type.name}
                     </p>
