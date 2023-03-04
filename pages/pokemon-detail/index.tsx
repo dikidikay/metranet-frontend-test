@@ -1,8 +1,7 @@
-import Layout from "@/components/Layouts/Layout";
 import React from "react";
 
 const index = () => {
-  return <Layout>Pokemon Detail</Layout>;
+  return <div>Pokemon Detail</div>;
 };
 
 export default index;
