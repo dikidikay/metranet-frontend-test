@@ -28,6 +28,7 @@ const PokemonCard = React.forwardRef(({ name }, ref) => {
                 width="999"
                 height="999"
                 className="w-full h-auto"
+                alt={name}
               />
             </div>
             {/* Body */}
@@ -62,4 +63,5 @@ const PokemonCard = React.forwardRef(({ name }, ref) => {
   );
 });
 
+PokemonCard.displayName = "PokemonCard";
 export default PokemonCard;
