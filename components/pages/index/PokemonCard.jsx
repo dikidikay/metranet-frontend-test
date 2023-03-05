@@ -17,17 +17,34 @@ const PokemonCard = React.forwardRef(({ name }, ref) => {
   });
 
   return (
-    <Link href={`/pokemon-detail`} className="no-underline">
+    <Link
+      href={`/pokemon-detail/${name}`}
+      className="no-underline"
+      title={name}
+    >
       <div className="block rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all">
-        <Skeleton loading={isLoading}>
+        <Skeleton
+          loading={isLoading}
+          active
+          title={{ style: { marginLeft: "10px" } }}
+          avatar={{
+            shape: "square",
+            style: { width: "100%", height: "200px" },
+          }}
+          paragraph={{
+            rows: 2,
+          }}
+          className="flex flex-col"
+        >
           <div ref={ref ? ref : undefined}>
             <div className=" bg-slate-300 rounded-t-lg">
               <Image
                 src={pokemon?.sprites?.front_default}
-                width="999"
-                height="999"
+                width="0"
+                height="0"
                 className="w-full h-auto"
                 alt={name}
+                unoptimized
               />
             </div>
             {/* Body */}

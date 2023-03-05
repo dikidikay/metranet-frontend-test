@@ -8,3 +8,19 @@
   margin: 0;
   font-family: "Roboto", sans-serif;
 }
+
+.ant-skeleton-header {
+  padding: 0 !important;
+}
+
+.ant-skeleton-paragraph {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px !important;
+  margin-top: 10px !important;
+}
+
+.ant-skeleton-paragraph li {
+  margin-block-start: 0 !important;
+}

@@ -15,3 +15,8 @@ export const getPokemonByName = async (name: string) => {
   const response = await pokemonsApi.get(`/pokemon/${name}`);
   return response.data;
 };
+
+export const getPokemonSpeciesByName = async (name: string) => {
+  const response = await pokemonsApi.get(`/pokemon-species/${name}`);
+  return response.data;
+};

@@ -4,17 +4,15 @@ import { Inter } from "next/font/google";
 import Layout from "@/components/Layouts/Layout";
 import { useInfiniteQuery } from "react-query";
 import { getPokemons } from "@/api/pokemonsApi";
-import { useRef, useCallback, useState } from "react";
-import PokemonCard from "@/components/index/PokemonCard";
+import { useRef, useCallback } from "react";
+import PokemonCard from "@/components/pages/index/PokemonCard";
 
 export default function Home() {
-  const [offsetParam, setOffsetParam] = useState(0);
-
   const {
     data: pokemons,
-    fetchNextPage, //function
-    hasNextPage, // boolean
-    isFetchingNextPage, // boolean
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
     status,
     error,
   } = useInfiniteQuery(
@@ -22,7 +20,14 @@ export default function Home() {
     ({ pageParam = 0 }) => getPokemons(pageParam),
     {
       getNextPageParam: (lastPage, allPages) => {
-        return lastPage?.next ? offsetParam + 20 : undefined;
+        const nextUrl = lastPage?.next;
+        const offsetIndex = nextUrl.indexOf("offset=");
+        const offsetValue = nextUrl.substring(
+          offsetIndex + 7,
+          nextUrl.indexOf("&")
+        );
+
+        return lastPage?.next ? offsetValue : undefined;
       },
     }
   );
@@ -37,7 +42,6 @@ export default function Home() {
 
       intObserver.current = new IntersectionObserver((posts) => {
         if (posts[0].isIntersecting && hasNextPage) {
-          setOffsetParam((prev) => prev + 20);
           fetchNextPage();
         }
       });
@@ -47,26 +51,24 @@ export default function Home() {
     [isFetchingNextPage, fetchNextPage, hasNextPage]
   );
 
-  const content = pokemons?.pages?.map((pg) => {
-    return pg?.results.map((pokemon, i) => {
-      if (pg?.results?.length === i + 1) {
-        return (
-          <PokemonCard
-            key={pokemon.name}
-            ref={lastPostRef}
-            name={pokemon.name}
-          />
-        );
-      }
-      return <PokemonCard key={pokemon.name} name={pokemon.name} />;
-    });
-  });
-
   return (
     <>
       <Layout title="Pokedex">
-        <div className="max-w-screen-xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 mt-6 p-3">
-          {content}
+        <div className="max-w-screen-xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 mt-6">
+          {pokemons?.pages?.map((pg) => {
+            return pg?.results.map((pokemon, i) => {
+              if (pg?.results?.length === i + 1) {
+                return (
+                  <PokemonCard
+                    key={pokemon.name}
+                    ref={lastPostRef}
+                    name={pokemon.name}
+                  />
+                );
+              }
+              return <PokemonCard key={pokemon.name} name={pokemon.name} />;
+            });
+          })}
         </div>
       </Layout>
     </>

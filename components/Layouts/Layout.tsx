@@ -2,6 +2,7 @@ import Image from "next/image";
 import Head from "next/head";
 import React from "react";
 import pokedexLogo from "@/assets/images/pokedex_logo.png";
+import Link from "next/link";
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -19,7 +20,10 @@ const Layout = ({ children, title }: LayoutProps) => {
       </Head>
       <header className="w-full fixed h-[75px] z-[9999] shadow-md bg-white">
         <div className="max-w-screen-xl mx-auto flex justify-between items-center p-3 h-full">
-          <Image src={pokedexLogo} alt="Pokedex Logo" width={200} priority />
+          <Link href="/" title="Go to home">
+            {" "}
+            <Image src={pokedexLogo} alt="Pokedex Logo" width={200} priority />
+          </Link>
 
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -39,7 +43,7 @@ const Layout = ({ children, title }: LayoutProps) => {
           </svg>
         </div>
       </header>
-      <main className="pt-[75px]">{children}</main>
+      <main className="pt-[75px] p-3">{children}</main>
     </>
   );
 };
