@@ -1,15 +1,33 @@
-import React from "react";
+import React, { useContext, useState, useEffect } from "react";
+import noImage from "@/assets/images/noimage.png";
 import { useQuery } from "react-query";
 import { useRouter } from "next/router";
 import { getPokemonByName, getPokemonSpeciesByName } from "@/api/pokemonsApi";
 import Image from "next/image";
-import { Skeleton, Spin } from "antd";
+import { Skeleton, Spin, notification } from "antd";
 import { LoadingOutlined, LeftCircleFilled } from "@ant-design/icons";
 import Link from "next/link";
+import PokemonContext from "@/context/PokemonContext";
+import {
+  StarOutlined,
+  StarFilled,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
 
 const PokemonDetailCard = () => {
+  notification.config({
+    placement: "top",
+    top: 5,
+    duration: 1.5,
+    zIndex: 1000,
+  });
+
   const router = useRouter();
   const name = router?.query?.name;
+  const { pokemonFavoriteList, setPokemonFavoriteList } =
+    useContext(PokemonContext);
+
+  const [isFavorited, setIsFavorited] = useState(false);
 
   const { isLoading: pokemonLoading, data: pokemon } = useQuery({
     queryKey: ["pokemon", name],
@@ -22,6 +40,55 @@ const PokemonDetailCard = () => {
     queryFn: () => getPokemonSpeciesByName(name),
     enabled: name !== undefined,
   });
+
+  const handleClickFavorite = (e) => {
+    e.preventDefault();
+
+    const isAlreadyFavorited = pokemonFavoriteList.some(
+      (favoritePokemon) => favoritePokemon === name
+    );
+
+    if (isAlreadyFavorited) {
+      notification.open({
+        message: "Removed from favorite",
+        icon: <InfoCircleOutlined />,
+        style: {
+          width: 300,
+          height: 65,
+        },
+      });
+
+      setPokemonFavoriteList((prevList) =>
+        prevList.filter((favoritePokemon) => favoritePokemon !== name)
+      );
+      setIsFavorited(false);
+    } else {
+      notification.open({
+        message: "Added to favorite",
+        icon: <InfoCircleOutlined />,
+        style: {
+          width: 300,
+          height: 65,
+        },
+      });
+
+      setPokemonFavoriteList((prevList) => [...prevList, name]);
+      setIsFavorited(true);
+    }
+  };
+
+  useEffect(() => {
+    if (name) {
+      setIsFavorited(
+        pokemonFavoriteList?.some((favorite) => favorite === name)
+      );
+    }
+
+    localStorage.setItem(
+      "favoritePokemon",
+      JSON.stringify(pokemonFavoriteList)
+    );
+  }, [pokemonFavoriteList, router]);
 
   return (
     <div className="max-w-screen-xl mx-auto mt-6">
@@ -42,6 +109,33 @@ const PokemonDetailCard = () => {
             >
               <LeftCircleFilled style={{ fontSize: "24px" }} />
             </button>
+
+            <button
+              className="border-0 bg-white cursor-pointer"
+              onClick={handleClickFavorite}
+            >
+              {!isFavorited ? (
+                <StarOutlined
+                  style={{
+                    fontSize: "18px",
+                    position: "absolute",
+                    top: "16px",
+                    right: "16px",
+                  }}
+                />
+              ) : (
+                <StarFilled
+                  style={{
+                    fontSize: "18px",
+                    color: "#D5AB55",
+                    position: "absolute",
+                    top: "16px",
+                    right: "16px",
+                  }}
+                />
+              )}
+            </button>
+
             {name && (
               <Image
                 src={

@@ -2,10 +2,9 @@ import Layout from "@/components/Layouts/Layout";
 import { useInfiniteQuery, useQuery } from "react-query";
 import { getPokemons, getPokemonsByType } from "@/api/pokemonsApi";
 import { useRef, useCallback, useState, useEffect } from "react";
-import PokemonCard from "@/components/pages/index/PokemonCard";
+import PokemonCard from "@/components/shared/PokemonCard";
 import ModalFilter from "@/components/pages/index/ModalFilter";
 import FilterLabel from "@/components/pages/index/FilterLabel";
-import { Button } from "antd";
 
 export default function Home() {
   const [filtered, setFiltered] = useState(false);
@@ -107,7 +106,7 @@ export default function Home() {
 
   return (
     <>
-      <Layout title="Pokedex">
+      <Layout title="Pokedex - Home">
         <div className="max-w-screen-xl mx-auto mt-6">
           <ModalFilter
             open={isModalFilterOpen}

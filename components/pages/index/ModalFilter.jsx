@@ -14,7 +14,7 @@ const ModalFilter = ({ open, onOk, onCancel, setFilterType, filterType }) => {
         defaultValue="Normal"
         buttonStyle="solid"
         onChange={(e) => setFilterType(e.target.value)}
-        className="grid grid-cols-4 gap-5"
+        className="grid grid-cols-2 gap-5 mb-8 mt-5 sm:grid-cols-3"
         value={filterType}
       >
         <Radio.Button value="normal">Normal</Radio.Button>

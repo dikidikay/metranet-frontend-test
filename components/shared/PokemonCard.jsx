@@ -1,28 +1,81 @@
 import { getPokemonByName } from "@/api/pokemonsApi";
-import { Skeleton } from "antd";
+import { Skeleton, notification } from "antd";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import noImage from "@/assets/images/noimage.png";
+import {
+  StarOutlined,
+  StarFilled,
+  InfoCircleOutlined,
+} from "@ant-design/icons";
+import PokemonContext from "@/context/PokemonContext";
 
 const PokemonCard = React.forwardRef(({ name }, ref) => {
-  const {
-    isLoading,
-    isError,
-    error,
-    data: pokemon,
-  } = useQuery({
+  notification.config({
+    placement: "top",
+    top: 5,
+    duration: 1.5,
+    zIndex: 1000,
+  });
+
+  const { pokemonFavoriteList, setPokemonFavoriteList } =
+    useContext(PokemonContext);
+  const [isFavorited, setIsFavorited] = useState(() =>
+    pokemonFavoriteList.some((favorite) => favorite === name)
+  );
+
+  const handleClickFavorite = (e) => {
+    e.preventDefault();
+
+    const isAlreadyFavorited = pokemonFavoriteList.some(
+      (favoritePokemon) => favoritePokemon === name
+    );
+
+    if (isAlreadyFavorited) {
+      notification.open({
+        message: "Removed from favorite",
+        icon: <InfoCircleOutlined />,
+        style: {
+          width: 300,
+          height: 65,
+        },
+      });
+
+      setPokemonFavoriteList((prevList) =>
+        prevList.filter((favoritePokemon) => favoritePokemon !== name)
+      );
+      setIsFavorited(false);
+    } else {
+      notification.open({
+        message: "Added to favorite",
+        icon: <InfoCircleOutlined />,
+        style: {
+          width: 300,
+          height: 65,
+        },
+      });
+
+      setPokemonFavoriteList((prevList) => [...prevList, name]);
+      setIsFavorited(true);
+    }
+  };
+
+  useEffect(() => {
+    localStorage.setItem(
+      "favoritePokemon",
+      JSON.stringify(pokemonFavoriteList)
+    );
+  }, [pokemonFavoriteList]);
+
+  const { isLoading, data: pokemon } = useQuery({
     queryKey: ["pokemon", name],
     queryFn: () => getPokemonByName(name),
   });
 
   return (
-    <Link
-      href={`/pokemon-detail/${name}`}
-      className="no-underline"
-      title={name}
-    >
+    <Link href={`/pokemon-detail/${name}`} className="no-underline">
       <div className="block rounded-lg shadow-md hover:shadow-lg transform hover:-translate-y-1 hover:scale-105 transition-all">
         <Skeleton
           loading={isLoading}
@@ -55,11 +108,25 @@ const PokemonCard = React.forwardRef(({ name }, ref) => {
             </div>
             {/* Body */}
             <div className="p-4">
-              <p className=" text-slate-500 font-bold mb-3">
-                {"#" +
-                  ("0000" + pokemon?.id).slice(-4, -1) +
-                  String(pokemon?.id).slice(-1)}
-              </p>
+              <div className="mb-3 flex justify-between">
+                <p className=" text-slate-500 font-bold ">
+                  {"#" +
+                    ("0000" + pokemon?.id).slice(-4, -1) +
+                    String(pokemon?.id).slice(-1)}
+                </p>
+                <button
+                  className="border-0 bg-white"
+                  onClick={handleClickFavorite}
+                >
+                  {!isFavorited ? (
+                    <StarOutlined style={{ fontSize: "16px" }} />
+                  ) : (
+                    <StarFilled
+                      style={{ fontSize: "16px", color: "#D5AB55" }}
+                    />
+                  )}
+                </button>
+              </div>
               <p className=" text-slate-700 font-semibold capitalize mb-1">
                 {pokemon?.name}
               </p>
