@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
+import noImage from "@/assets/images/noimage.png";
 
 const PokemonCard = React.forwardRef(({ name }, ref) => {
   const {
@@ -39,12 +40,17 @@ const PokemonCard = React.forwardRef(({ name }, ref) => {
           <div ref={ref ? ref : undefined}>
             <div className=" bg-slate-300 rounded-t-lg">
               <Image
-                src={pokemon?.sprites?.front_default}
+                src={
+                  pokemon?.sprites?.front_default ??
+                  pokemon?.sprites?.other?.home?.front_default ??
+                  noImage
+                }
                 width="0"
                 height="0"
                 className="w-full h-auto"
                 alt={name}
                 unoptimized
+                priority
               />
             </div>
             {/* Body */}

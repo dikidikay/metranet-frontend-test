@@ -1,13 +1,43 @@
-import Head from "next/head";
-import Image from "next/image";
-import { Inter } from "next/font/google";
 import Layout from "@/components/Layouts/Layout";
-import { useInfiniteQuery } from "react-query";
-import { getPokemons } from "@/api/pokemonsApi";
-import { useRef, useCallback } from "react";
+import { useInfiniteQuery, useQuery } from "react-query";
+import { getPokemons, getPokemonsByType } from "@/api/pokemonsApi";
+import { useRef, useCallback, useState, useEffect } from "react";
 import PokemonCard from "@/components/pages/index/PokemonCard";
+import ModalFilter from "@/components/pages/index/ModalFilter";
+import FilterLabel from "@/components/pages/index/FilterLabel";
+import { Button } from "antd";
 
 export default function Home() {
+  const [filtered, setFiltered] = useState(false);
+  const [isModalFilterOpen, setIsModalFilterOpen] = useState(false);
+  const [filterType, setFilterType] = useState("");
+  const [filterLabelText, setFilterLabelText] = useState("");
+
+  /*** FUNCTIONS ***/
+  const showModalFilter = () => {
+    setIsModalFilterOpen(true);
+  };
+
+  const handleOkFilter = () => {
+    setIsModalFilterOpen(false);
+    setFiltered(true);
+    refetch();
+    setFilterLabelText(filterType);
+    localStorage.setItem("filterType", filterType);
+  };
+
+  const handleCancelFilter = () => {
+    setIsModalFilterOpen(false);
+  };
+
+  const handleResetFilter = () => {
+    setIsModalFilterOpen(false);
+    setFiltered(false);
+    localStorage.removeItem("filterType");
+    setFilterType("");
+  };
+
+  // Fetch all pokemon data no filter
   const {
     data: pokemons,
     fetchNextPage,
@@ -17,21 +47,35 @@ export default function Home() {
     error,
   } = useInfiniteQuery(
     "/pokemon",
-    ({ pageParam = 0 }) => getPokemons(pageParam),
+    ({ pageParam = 0 }) => !filtered && getPokemons(pageParam),
     {
       getNextPageParam: (lastPage, allPages) => {
         const nextUrl = lastPage?.next;
-        const offsetIndex = nextUrl.indexOf("offset=");
-        const offsetValue = nextUrl.substring(
+        const offsetIndex = nextUrl?.indexOf("offset=");
+        const offsetValue = nextUrl?.substring(
           offsetIndex + 7,
-          nextUrl.indexOf("&")
+          nextUrl?.indexOf("&")
         );
 
         return lastPage?.next ? offsetValue : undefined;
       },
+      enabled: !filtered,
     }
   );
 
+  // Fetch pokemon data by type
+  const {
+    isLoading,
+    isError,
+    data: pokemonsFilteredByType,
+    refetch,
+  } = useQuery({
+    queryKey: ["pokemonsFilteredByType", "water"],
+    queryFn: () => getPokemonsByType(filterType),
+    enabled: filtered,
+  });
+
+  // For infinite scroll
   const intObserver = useRef();
 
   const lastPostRef = useCallback(
@@ -51,24 +95,79 @@ export default function Home() {
     [isFetchingNextPage, fetchNextPage, hasNextPage]
   );
 
+  /*** EFFECTS ***/
+  useEffect(() => {
+    const savedFilterType = localStorage.getItem("filterType");
+    if (savedFilterType !== null) {
+      setFilterType(savedFilterType);
+      setFiltered(true);
+      setFilterLabelText(savedFilterType);
+    }
+  }, []);
+
   return (
     <>
       <Layout title="Pokedex">
+        <div className="max-w-screen-xl mx-auto mt-6">
+          <ModalFilter
+            open={isModalFilterOpen}
+            onOk={handleOkFilter}
+            onCancel={handleCancelFilter}
+            setFilterType={setFilterType}
+            filterType={filterType}
+          />
+          <div className="flex justify-between items-center">
+            <div>
+              <button
+                type="primary"
+                onClick={showModalFilter}
+                className="bg-slate-500 hover:bg-slate-400 border-0 py-2 px-4 rounded-md cursor-pointer font-bold text-white mr-2"
+              >
+                Filter by type
+              </button>
+
+              <button
+                type="primary"
+                onClick={handleResetFilter}
+                className="bg-slate-500 hover:bg-slate-400 border-0 py-2 px-4 rounded-md cursor-pointer font-bold text-white"
+              >
+                Reset Filter
+              </button>
+            </div>
+
+            {filtered && filterType && (
+              <FilterLabel filterLabelText={filterLabelText} />
+            )}
+          </div>
+        </div>
         <div className="max-w-screen-xl mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 mt-6">
-          {pokemons?.pages?.map((pg) => {
-            return pg?.results.map((pokemon, i) => {
-              if (pg?.results?.length === i + 1) {
-                return (
-                  <PokemonCard
-                    key={pokemon.name}
-                    ref={lastPostRef}
-                    name={pokemon.name}
-                  />
-                );
-              }
-              return <PokemonCard key={pokemon.name} name={pokemon.name} />;
-            });
-          })}
+          {/* All pokemons & Infinity scrolling */}
+          {!filtered &&
+            pokemons &&
+            pokemons?.pages?.map((pg) => {
+              return pg?.results.map((pokemon, i) => {
+                if (pg?.results?.length === i + 1) {
+                  return (
+                    <PokemonCard
+                      key={pokemon.name}
+                      ref={lastPostRef}
+                      name={pokemon.name}
+                    />
+                  );
+                }
+                return <PokemonCard key={pokemon.name} name={pokemon.name} />;
+              });
+            })}
+
+          {/* Filtered Pokemons */}
+          {filtered &&
+            pokemonsFilteredByType &&
+            pokemonsFilteredByType?.pokemon?.map((item) => (
+              <PokemonCard
+                key={item?.pokemon?.name}
+                name={item?.pokemon?.name}
+              />
+            ))}
         </div>
       </Layout>
     </>

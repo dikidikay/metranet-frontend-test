@@ -1,7 +1,5 @@
 import axios from "axios";
 
-// "next": "https://pokeapi.co/api/v2/pokemon/?offset=20&limit=20",
-
 const pokemonsApi = axios.create({
   baseURL: "https://pokeapi.co/api/v2/",
 });
@@ -13,6 +11,11 @@ export const getPokemons = async (offset = 0) => {
 
 export const getPokemonByName = async (name: string) => {
   const response = await pokemonsApi.get(`/pokemon/${name}`);
+  return response.data;
+};
+
+export const getPokemonsByType = async (type: string) => {
+  const response = await pokemonsApi.get(`/type/${type}`);
   return response.data;
 };
 
