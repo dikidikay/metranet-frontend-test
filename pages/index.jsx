@@ -1,5 +1,5 @@
 import Layout from "@/components/Layouts/Layout";
-import { useInfiniteQuery, useQuery } from "react-query";
+import { useInfiniteQuery, useQuery, useQueryClient } from "react-query";
 import { getPokemons, getPokemonsByType } from "@/api/pokemonsApi";
 import { useRef, useCallback, useState, useEffect } from "react";
 import PokemonCard from "@/components/shared/PokemonCard";
@@ -7,11 +7,22 @@ import ModalFilter from "@/components/pages/index/ModalFilter";
 import FilterLabel from "@/components/pages/index/FilterLabel";
 
 export default function Home() {
-  const [filtered, setFiltered] = useState(false);
+  const [filtered, setFiltered] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedFilterType = localStorage.getItem("filterType");
+      return savedFilterType !== null ? true : false;
+    }
+  });
   const [isModalFilterOpen, setIsModalFilterOpen] = useState(false);
-  const [filterType, setFilterType] = useState("");
+  const [filterType, setFilterType] = useState(() => {
+    if (typeof window !== "undefined") {
+      const savedFilterType = localStorage.getItem("filterType");
+      return savedFilterType !== null ? savedFilterType : "";
+    }
+  });
   const [filterLabelText, setFilterLabelText] = useState("");
 
+  const queryClient = useQueryClient();
   /*** FUNCTIONS ***/
   const showModalFilter = () => {
     setIsModalFilterOpen(true);
@@ -36,6 +47,18 @@ export default function Home() {
     setFilterType("");
   };
 
+  // Fetch pokemon data by type
+  const {
+    isLoading,
+    isError,
+    data: pokemonsFilteredByType,
+    refetch,
+  } = useQuery({
+    queryKey: ["pokemonsFilteredByType", "water"],
+    queryFn: () => getPokemonsByType(filterType),
+    enabled: filtered,
+  });
+
   // Fetch all pokemon data no filter
   const {
     data: pokemons,
@@ -46,7 +69,13 @@ export default function Home() {
     error,
   } = useInfiniteQuery(
     "/pokemon",
-    ({ pageParam = 0 }) => !filtered && getPokemons(pageParam),
+    ({ pageParam = 0 }) => {
+      if (filtered) {
+        return;
+      } else {
+        return !filtered && getPokemons(pageParam);
+      }
+    },
     {
       getNextPageParam: (lastPage, allPages) => {
         const nextUrl = lastPage?.next;
@@ -61,18 +90,6 @@ export default function Home() {
       enabled: !filtered,
     }
   );
-
-  // Fetch pokemon data by type
-  const {
-    isLoading,
-    isError,
-    data: pokemonsFilteredByType,
-    refetch,
-  } = useQuery({
-    queryKey: ["pokemonsFilteredByType", "water"],
-    queryFn: () => getPokemonsByType(filterType),
-    enabled: filtered,
-  });
 
   // For infinite scroll
   const intObserver = useRef();
